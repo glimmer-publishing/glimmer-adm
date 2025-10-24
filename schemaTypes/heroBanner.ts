@@ -16,8 +16,26 @@ export default defineType({
       type: 'string',
     }),
     defineField({
-      name: 'image',
-      title: 'Картинка для слайду',
+      name: 'imageMob',
+      title: 'Картинка для слайду на мобільному',
+      type: 'image',
+      options: {
+        hotspot: true,
+      },
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'imageTab',
+      title: 'Картинка для слайду на планшеті',
+      type: 'image',
+      options: {
+        hotspot: true,
+      },
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'imageDesk',
+      title: "Картинка для слайду на комп'ютері",
       type: 'image',
       options: {
         hotspot: true,
