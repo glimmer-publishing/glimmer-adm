@@ -164,5 +164,12 @@ export default defineType({
       type: 'boolean',
       initialValue: false,
     }),
+    defineField({
+      name: 'isNationalCashback',
+      title: 'Національний кешбек',
+      description: 'Книжка доступна для оплати карткою «Національний кешбек»',
+      type: 'boolean',
+      initialValue: false,
+    }),
   ],
 })
