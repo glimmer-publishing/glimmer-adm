@@ -15,9 +15,23 @@ export default defineType({
     }),
     defineField({
       name: 'genre',
-      title: 'Жанр',
+      title: 'Жанр (застаріле)',
+      description:
+        'Застаріле поле, залишене для сумісності під час міграції. Використовуйте поле "Жанри" нижче.',
       type: 'reference',
       to: [{type: 'genre'}],
+    }),
+    defineField({
+      name: 'genres',
+      title: 'Жанри',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'genre'}],
+        },
+      ],
+      validation: (Rule) => Rule.unique(),
     }),
     defineField({
       name: 'title',
