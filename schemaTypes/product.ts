@@ -34,6 +34,45 @@ export default defineType({
       validation: (Rule) => Rule.unique(),
     }),
     defineField({
+      name: 'manualRecommendations',
+      title: 'Рекомендовані товари (вручну)',
+      description:
+        'Товари, що показуватимуться як рекомендовані для цієї книги (на сторінці товару та в кошику), з пріоритетом над автоматичними рекомендаціями за жанром.',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'product'}],
+          // Weak on purpose: a curated pick is a merchandising hint, not a
+          // dependency. A strong reference would make Sanity refuse to
+          // unpublish or delete any product that some other product happens to
+          // recommend, and there is no reverse view to find those referrers.
+          // The storefront already drops picks that no longer resolve.
+          weak: true,
+          options: {
+            // Keep the product being edited out of its own picker. The id is
+            // compared in both its published and draft form, since either may
+            // be what the reference would resolve to.
+            filter: ({document}) => {
+              const id = document?._id?.replace(/^drafts\./, '') ?? ''
+              return {
+                filter: '_id != $id && _id != $draftId',
+                params: {id, draftId: `drafts.${id}`},
+              }
+            },
+          },
+        },
+      ],
+      validation: (Rule) =>
+        Rule.unique().custom((refs, context) => {
+          const id = context.document?._id?.replace(/^drafts\./, '')
+          const hasSelfReference = ((refs ?? []) as Array<{_ref?: string}>).some(
+            (ref) => ref._ref?.replace(/^drafts\./, '') === id
+          )
+          return hasSelfReference ? 'Товар не може бути рекомендованим сам для себе' : true
+        }),
+    }),
+    defineField({
       name: 'title',
       title: 'Назва книги',
       type: 'string',
