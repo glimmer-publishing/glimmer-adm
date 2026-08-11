@@ -14,16 +14,10 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'genre',
-      title: 'Жанр (застаріле)',
-      description:
-        'Застаріле поле, залишене для сумісності під час міграції. Використовуйте поле "Жанри" нижче.',
-      type: 'reference',
-      to: [{type: 'genre'}],
-    }),
-    defineField({
       name: 'genres',
       title: 'Жанри',
+      description:
+        'Визначає жанр у хлібних крихтах, вкладку в каталозі, автоматичні рекомендації та категорію товару у Google Merchant. Перший жанр у списку вважається основним.',
       type: 'array',
       of: [
         {
