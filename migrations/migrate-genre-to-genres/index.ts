@@ -1,5 +1,8 @@
 import {at, defineMigration, setIfMissing} from 'sanity/migrate'
 
+// Superseded by `unset-legacy-genre`. Kept as an audit trail; it is a permanent
+// no-op once that migration has run, since there is no `genre` left to copy from.
+//
 // Copies the legacy single `genre` reference onto the new `genres` array,
 // for any product that has a `genre` but no `genres` yet. Idempotent and
 // safe to re-run: products that already have `genres` are left untouched,
