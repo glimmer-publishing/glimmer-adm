@@ -8,7 +8,9 @@ export default defineConfig({
   title: 'glimmer-backend',
 
   projectId: 'us9jz0mn',
-  dataset: 'production',
+  // Defaults to production so a missing variable cannot point the live Studio
+  // somewhere unexpected. The preview deployment sets it to 'preview'.
+  dataset: process.env.SANITY_STUDIO_DATASET || 'production',
 
   plugins: [
     structureTool({
