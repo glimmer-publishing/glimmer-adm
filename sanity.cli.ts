@@ -3,7 +3,9 @@ import {defineCliConfig} from 'sanity/cli'
 export default defineCliConfig({
   api: {
     projectId: 'us9jz0mn',
-    dataset: 'production'
+    // Also drives CLI commands, so `sanity migration run` and dataset
+    // operations target whichever dataset SANITY_STUDIO_DATASET names.
+    dataset: process.env.SANITY_STUDIO_DATASET || 'production',
   },
   /**
    * Enable auto-updates for studios.
