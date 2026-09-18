@@ -98,7 +98,54 @@ export default defineType({
       name: 'discountPrice',
       title: 'Ціна зі знижкою',
       type: 'number',
-      validation: (Rule) => Rule.min(0),
+      description:
+        'Залиште порожнім, якщо знижки немає. Дати нижче визначають, коли вона вмикається і вимикається.',
+      validation: (Rule) =>
+        Rule.positive().custom((discountPrice, context) => {
+          const p = context.parent as any
+          if (typeof discountPrice !== 'number') return true
+          if (typeof p?.price !== 'number') return true
+          if (discountPrice >= p.price) {
+            return 'Ціна зі знижкою має бути меншою за повну ціну'
+          }
+          return true
+        }),
+    }),
+    defineField({
+      name: 'discountDateFrom',
+      title: 'Знижка діє з',
+      type: 'date',
+      description: 'Порожнє поле означає, що знижка вже діє.',
+      options: {
+        dateFormat: 'YYYY-MM-DD',
+      },
+      // Only hidden while empty: hiding does not clear a value, and a leftover
+      // date from an old sale would otherwise silently cancel the next one.
+      hidden: ({parent, value}: {parent: any; value?: string}) =>
+        !value && typeof parent?.discountPrice !== 'number',
+    }),
+    defineField({
+      name: 'discountDateTo',
+      title: 'Знижка діє до',
+      type: 'date',
+      description:
+        'Включно — знижка працює весь цей день. Порожнє поле означає, що знижка безстрокова.',
+      options: {
+        dateFormat: 'YYYY-MM-DD',
+      },
+      // Only hidden while empty: hiding does not clear a value, and a leftover
+      // date from an old sale would otherwise silently cancel the next one.
+      hidden: ({parent, value}: {parent: any; value?: string}) =>
+        !value && typeof parent?.discountPrice !== 'number',
+      validation: (Rule) =>
+        Rule.custom((dateTo, context) => {
+          const p = context.parent as any
+          if (!dateTo || !p?.discountDateFrom) return true
+          if (dateTo < p.discountDateFrom) {
+            return 'Дата закінчення не може бути раніше за дату початку'
+          }
+          return true
+        }),
     }),
     defineField({
       name: 'description',
@@ -219,4 +266,53 @@ export default defineType({
       initialValue: false,
     }),
   ],
+  preview: {
+    select: {
+      title: 'title',
+      media: 'gallery.0',
+      price: 'price',
+      discountPrice: 'discountPrice',
+      discountDateFrom: 'discountDateFrom',
+      discountDateTo: 'discountDateTo',
+    },
+    prepare({title, media, price, discountPrice, discountDateFrom, discountDateTo}) {
+      const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/Kyiv',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).formatToParts(new Date())
+      const part = (type: string) => parts.find((p) => p.type === type)?.value
+      const today = `${part('year')}-${part('month')}-${part('day')}`
+      const short = (date: string) => {
+        const [, month, day] = date.split('-')
+        return `${day}.${month}`
+      }
+
+      const fullPrice = typeof price === 'number' ? `${price} грн` : 'ціну не вказано'
+
+      if (typeof discountPrice !== 'number') {
+        return {title, media, subtitle: fullPrice}
+      }
+
+      const sale =
+        typeof price === 'number'
+          ? `${discountPrice} грн (замість ${price} грн)`
+          : `${discountPrice} грн`
+
+      if (discountDateFrom && discountDateFrom > today) {
+        return {title, media, subtitle: `Акція запланована з ${short(discountDateFrom)} — ${sale}`}
+      }
+      if (discountDateTo && discountDateTo < today) {
+        return {title, media, subtitle: `Акція завершилась ${short(discountDateTo)} — ${fullPrice}`}
+      }
+      return {
+        title,
+        media,
+        subtitle: discountDateTo
+          ? `Акція активна до ${short(discountDateTo)} — ${sale}`
+          : `Акція активна — ${sale}`,
+      }
+    },
+  },
 })
