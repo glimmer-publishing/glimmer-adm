@@ -101,7 +101,7 @@ export default defineType({
       description:
         'Залиште порожнім, якщо знижки немає. Дати нижче визначають, коли вона вмикається і вимикається.',
       validation: (Rule) =>
-        Rule.positive().custom((discountPrice, context) => {
+        Rule.greaterThan(0).custom((discountPrice, context) => {
           const p = context.parent as any
           if (typeof discountPrice !== 'number') return true
           if (typeof p?.price !== 'number') return true
